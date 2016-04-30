@@ -28,7 +28,6 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.IdleStateHandler;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -70,7 +69,7 @@ public class XioServerTransport {
     this.hostAddr = def.getHostAddress();
     this.allChannels = allChannels;
     // connectionLimiter must be instantiated exactly once (and thus outside the pipeline factory)
-    final ConnectionLimiter connectionLimiter = new ConnectionLimiter(def.getMaxConnections());
+    final ConnectionLimiter connectionLimiter = new ConnectionLimiter(15000);
     this.channelStatistics = new ChannelStatistics(allChannels);
 
     //TODO(JR): This is an ugly mess, clean this up
@@ -80,7 +79,8 @@ public class XioServerTransport {
         ChannelPipeline cp = channel.pipeline();
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
         cp.addLast("connectionContext", new ConnectionContextHandler());
-        cp.addLast("connectionLimiter", connectionLimiter);
+        cp.addLast("globalConnectionLimiter", connectionLimiter);
+        cp.addLast("serviceConnectionLimiter", new ConnectionLimiter(def.getMaxConnections()));
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("messageLogger", new XioMessageLogger());
@@ -138,7 +138,7 @@ public class XioServerTransport {
     } catch (Throwable e) {
       //TODO(JR): Do somefin here
 //      e.printStackTrace();
-      String msg = e.getMessage() + " ("+hostAddr+")";
+      String msg = e.getMessage() + " (" + hostAddr + ")";
       log.error(msg, e);
       throw new RuntimeException(msg, e);
     }
@@ -172,7 +172,7 @@ public class XioServerTransport {
     } catch (Throwable e) {
       //TODO(JR): Do somefin here
 //      e.printStackTrace();
-      String msg = e.getMessage() + " ("+hostAddr+")";
+      String msg = e.getMessage() + " (" + hostAddr + ")";
       log.error(msg, e);
       throw new RuntimeException(msg, e);
     }
