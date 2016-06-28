@@ -12,6 +12,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
@@ -19,6 +20,9 @@ import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.log4j.Logger;
@@ -36,6 +40,14 @@ public class NodeHealthCheck {
     } else {
       epollEventLoop = null;
       nioEventLoop = new NioEventLoopGroup(workerPoolSize);
+    }
+  }
+
+  public EventLoopGroup getExec(){
+    if (Epoll.isAvailable()) {
+      return epollEventLoop;
+    } else {
+      return nioEventLoop;
     }
   }
 
@@ -155,17 +167,17 @@ public class NodeHealthCheck {
         if (!future.isSuccess()) {
           try {
             retryLoop.takeException((Exception) future.cause());
-            log.error("==== Service connect failure (will retry) ", future.cause());
+            log.debug("==== Service connect failure (will retry) "+ node.address().getHostName() + ":" + node.address().getPort());
             connect2(node, bootstrap, retryLoop);
           } catch (Exception e) {
-            log.error("==== Service connect failure ", future.cause());
+            log.debug("==== Service connect failure " + node.address().getHostName() + ":" + node.address().getPort());
             // Close the connection if the connection attempt has failed.
             node.setAvailable(false);
           }
         } else {
           // TODO: close will happen after true ecv check is done
           future.channel().close();
-          log.info("Node connected: ");
+          //log.info("Node connected: ");
         }
       }
     };
