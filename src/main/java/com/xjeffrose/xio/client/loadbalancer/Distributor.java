@@ -89,7 +89,7 @@ public class Distributor {
       if (node.isAvailable()) {
         okNodes.putIfAbsent(node.token(), node);
       } else {
-        log.info("Node is unreachable: " + node.address().getHostName() + ":" + node.address().getPort());
+        log.debug("Node is unreachable: " + node.address().getHostName() + ":" + node.address().getPort());
         okNodes.remove(node.token());
       }
     }
