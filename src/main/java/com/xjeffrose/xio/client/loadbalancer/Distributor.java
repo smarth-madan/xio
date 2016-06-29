@@ -11,6 +11,7 @@ import io.netty.util.TimerTask;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -67,11 +68,14 @@ public class Distributor {
   }
 
   private void registerHealthCheck(){
+    Random r = new Random();
+    //node health is scheduled at some random value between 5 and 35 sec.
     nodeCheck.scheduleAtFixedRate(new Runnable(){
+      @Override
       public void run() {
         nodeHealthCheck.getExec().submit(() -> refreshPool());
       }
-    },0,10,TimeUnit.SECONDS);
+    },0,r.nextInt(31)+5,TimeUnit.SECONDS);
   }
 
   private void refreshPool() {
