@@ -10,7 +10,7 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio</artifactId>
-    <version>0.10.0-SNAPSHOT</version>
+    <version>0.11.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio</name>
     <description>High Performance HTTP Server based on Netty and Xio</description>
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.0.CR7</version>
+            <version>4.1.1.Final</version>
         </dependency>
 
         <!--<dependency>-->
@@ -142,7 +142,6 @@
             <version>1.2.17</version>
             <scope>provided</scope>
         </dependency>
-
 
     </dependencies>
     <build>
