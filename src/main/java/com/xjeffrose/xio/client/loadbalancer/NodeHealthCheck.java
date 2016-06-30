@@ -18,6 +18,7 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import java.util.List;
@@ -57,18 +58,7 @@ public class NodeHealthCheck {
       ChannelInitializer<EpollSocketChannel> pipeline = new ChannelInitializer<EpollSocketChannel>() {
         @Override
         protected void initChannel(EpollSocketChannel channel) throws Exception {
-          ChannelPipeline cp = channel.pipeline();
-          if (ssl) {
-            cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
-          }
-          if (proto == (Protocol.HTTP)) {
-            cp.addLast(new HttpClientCodec());
-          }
-          if (proto == (Protocol.HTTPS)) {
-            cp.addLast(new HttpClientCodec());
-          }
-          cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
-          cp.addLast(new NodeECV(node, proto, ecv));
+          ChannelPipeline cp = getDefaultCP(channel,proto,ssl,ecv,node);
         }
       };
 
@@ -77,23 +67,29 @@ public class NodeHealthCheck {
       ChannelInitializer<NioSocketChannel> pipeline = new ChannelInitializer<NioSocketChannel>() {
         @Override
         protected void initChannel(NioSocketChannel channel) throws Exception {
-          ChannelPipeline cp = channel.pipeline();
-          if (ssl) {
-            cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
-          }
-          if (proto == (Protocol.HTTP)) {
-            cp.addLast(new HttpClientCodec());
-          }
-          if (proto == (Protocol.HTTPS)) {
-            cp.addLast(new HttpClientCodec());
-          }
-          cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
-          cp.addLast(new NodeECV(node, proto, ecv));
+          ChannelPipeline cp = getDefaultCP(channel,proto,ssl,ecv,node);
         }
       };
-
       connect(node, nioEventLoop, pipeline);
     }
+  }
+
+  private ChannelPipeline getDefaultCP(SocketChannel channel, Protocol proto, boolean ssl, ECV ecv, Node node){
+    ChannelPipeline cp = channel.pipeline();
+    if (ssl) {
+      /*TODO: smadan - removing Security handling for health check but need to be added back for actual ECV check.
+              SelfSignedX509CertGenerator.generate("*.paypal.com");  -- Taking a lot of CPU */
+      //cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
+    }
+    if (proto == (Protocol.HTTP)) {
+      cp.addLast(new HttpClientCodec());
+    }
+    if (proto == (Protocol.HTTPS)) {
+      cp.addLast(new HttpClientCodec());
+    }
+    cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
+    cp.addLast(new NodeECV(node, proto, ecv));
+    return cp;
   }
 
   private void connect(Node node, NioEventLoopGroup workerGroup, ChannelInitializer<NioSocketChannel> pipeline) {
