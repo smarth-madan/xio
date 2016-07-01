@@ -79,7 +79,7 @@ public class NodeHealthCheck {
     if (ssl) {
       /*TODO: smadan - removing Security handling for health check but need to be added back for actual ECV check.
               SelfSignedX509CertGenerator.generate("*.paypal.com");  -- Taking a lot of CPU */
-      //cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
+      cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
     }
     if (proto == (Protocol.HTTP)) {
       cp.addLast(new HttpClientCodec());
@@ -173,7 +173,7 @@ public class NodeHealthCheck {
         } else {
           // TODO: close will happen after true ecv check is done
           future.channel().close();
-          //log.info("Node connected: ");
+          //log.info("Node connected: " + node);
         }
       }
     };
