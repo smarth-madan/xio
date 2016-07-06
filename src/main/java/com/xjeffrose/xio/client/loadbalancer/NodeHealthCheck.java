@@ -77,8 +77,6 @@ public class NodeHealthCheck {
   private ChannelPipeline getDefaultCP(SocketChannel channel, Protocol proto, boolean ssl, ECV ecv, Node node){
     ChannelPipeline cp = channel.pipeline();
     if (ssl) {
-      /*TODO: smadan - removing Security handling for health check but need to be added back for actual ECV check.
-              SelfSignedX509CertGenerator.generate("*.paypal.com");  -- Taking a lot of CPU */
       cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
     }
     if (proto == (Protocol.HTTP)) {
