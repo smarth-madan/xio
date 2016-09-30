@@ -90,6 +90,7 @@ public class XioServerTransport {
         cp.addLast("globalConnectionLimiter", connectionLimiter);
         cp.addLast("serviceConnectionLimiter", new ConnectionLimiter(def.getMaxConnections()));
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
+        cp.addLast("protocolProxyHandler", def.getProtocolProxyFactory().getProtocolProxy());
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("messageLogger", new XioMessageLogger());
         cp.addLast("codec", def.getCodecFactory().getCodec());

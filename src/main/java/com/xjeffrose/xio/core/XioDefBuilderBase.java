@@ -37,6 +37,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
   private XioAggregatorFactory aggregatorFactory;
   private XioRoutingFilterFactory routingFilterFactory;
   private Distributor distributor;
+  private XioProtocolProxyFactory protocolProxyFactory;
 
   public XioDefBuilderBase() {
     this.port = 8080;
@@ -124,6 +125,11 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     return (T) this;
   }
 
+  public T withProtocolProxyFactory(XioProtocolProxyFactory protocolProxyFactory) {
+    this.protocolProxyFactory = protocolProxyFactory;
+    return (T) this;
+  }
+
   public T withRoutingFilter(XioRoutingFilterFactory routingFilterFactory) {
     this.routingFilterFactory = routingFilterFactory;
     return (T) this;
@@ -157,6 +163,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
         securityFactory,
         codecFactory,
         aggregatorFactory,
-        routingFilterFactory);
+        routingFilterFactory,
+        protocolProxyFactory);
   }
 }
