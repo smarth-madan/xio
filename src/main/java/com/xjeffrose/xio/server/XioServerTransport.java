@@ -86,11 +86,15 @@ public class XioServerTransport {
               NO_ALL_IDLE_TIMEOUT,
               TimeUnit.MILLISECONDS));
         }
+
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("globalConnectionLimiter", connectionLimiter);
         cp.addLast("serviceConnectionLimiter", new ConnectionLimiter(def.getMaxConnections()));
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
-        cp.addLast("protocolProxyHandler", def.getProtocolProxyFactory().getProtocolProxy());
+        ChannelHandler proxyProtocolHandler = (def.getProtocolProxyFactory() != null ? def.getProtocolProxyFactory().getProtocolProxy() : null);
+        if(proxyProtocolHandler != null) {
+          cp.addLast("proxyProtocolHandler", proxyProtocolHandler);
+        }
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("messageLogger", new XioMessageLogger());
         cp.addLast("codec", def.getCodecFactory().getCodec());
